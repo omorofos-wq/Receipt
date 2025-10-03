@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <title>Receipt</title>
+
+    <style>
+
+        /* Base styles for the view on a screen */
+
+        body {
+
+            font-family: Arial, sans-serif;
+
+            margin: 0;
+
+            padding: 20px;
+
+            text-align: center; /* Center content on the screen */
+
+        }
+
+        .container {
+
+            width: 75mm; /* Target width for the content */
+
+            margin: 0 auto; /* Center the container */
+
+            border: 1px solid #ccc; /* Visual aid on screen */
+
+            padding: 10px;
+
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+
+        }
+
+        .print-button {
+
+            margin-top: 20px;
+
+            padding: 10px 20px;
+
+            cursor: pointer;
+
+            background-color: #007bff;
+
+            color: white;
+
+            border: none;
+
+            border-radius: 5px;
+
+        }
+
+ 
+
+        /* Print-specific styles (critical for 75mm width) */
+
+        @media print {
+
+            body {
+
+                margin: 0; /* Remove browser margins */
+
+                padding: 0;
+
+            }
+
+            .container {
+
+                width: 75mm; /* Enforce 75mm print width */
+
+                border: none; /* Remove border when printing */
+
+                box-shadow: none;
+
+                text-align: center; /* Center the content within the 75mm area */
+
+            }
+
+            .print-button {
+
+                display: none; /* Hide the button when printing */
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+ 
+
+<div class="container" id="report-content">
+
+    <p id="search-output">Loading data...</p>
+
+</div>
+
+ 
+
+<button class="print-button" onclick="window.print()">Print Report</button>
+
+ 
+
+<script>
+
+    // Function to get the URL parameter 'data'
+
+    function getParameterByName(name, url = window.location.href) {
+
+        name = name.replace(/[\[\]]/g, '\\$&');
+
+        var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+
+            results = regex.exec(url);
+
+        if (!results) return null;
+
+        if (!results[2]) return '';
+
+        return decodeURIComponent(results[2].replace(/\+/g, ' '));
+
+    }
+
+ 
+
+    // Get the search data and display it
+
+    document.addEventListener('DOMContentLoaded', () => {
+
+        const searchData = getParameterByName('data');
+
+        const outputElement = document.getElementById('search-output');
+
+       
+
+        if (searchData) {
+
+            // Display the data, converting URL-encoded newlines back to breaks
+
+            outputElement.innerHTML = searchData.replace(/\\n/g, '<br>');
+
+        } else {
+
+            outputElement.innerText = 'No data found in URL.';
+
+        }
+
+    });
+
+ 
+
+</script>
+
+ 
+
+</body>
+
+</html>
