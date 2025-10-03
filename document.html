@@ -1,0 +1,52 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Receipt</title>
+  <style>
+    body {
+      width: 75mm;
+      margin: auto;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    h1 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    pre {
+      font-size: 13px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    button {
+      margin-top: 20px;
+      padding: 8px 16px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Receipt Report</h1>
+  <pre id="search">Loading...</pre>
+  <button onclick="window.print()">Print</button>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const rawSearch = urlParams.get('search');
+
+    if (rawSearch) {
+      const decoded = decodeURIComponent(rawSearch.replace(/\+/g, ' '));
+      document.getElementById('search').textContent = decoded;
+    } else {
+      document.getElementById('search').textContent = 'No receipt data provided.';
+    }
+  </script>
+</body>
+</html>
+
