@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Receipt</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    body {
+      width: 75mm;
+      margin: auto;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 10px;
+      box-sizing: border-box;
+    }
+    img#logo {
+      max-width: 60mm;
+      display: none;
+      margin: 0 auto 10px auto;
+    }
+    pre {
+      font-size: 13px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      margin: 0;
+    }
+    button#printBtn {
+      margin-top: 15px;
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    @media print {
+      button#printBtn {
+        display: none;
+      }
+    }
+    @media only screen and (max-width: 768px) {
+      button#printBtn {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="receiptContainer">
+    <img id="logo" alt="Logo">
+    <pre id="receipt">Loading...</pre>
+  </div>
+  <button id="printBtn" onclick="window.print()">Print</button>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const rawSearch = urlParams.get('search');
+    const logoUrl = urlParams.get('logo');
+
+    // Display receipt content
+    if (rawSearch) {
+      const decoded = decodeURIComponent(rawSearch.replace(/\+/g, ' '));
+      document.getElementById('receipt').textContent = decoded;
+    } else {
+      document.getElementById('receipt').textContent = 'No receipt data provided.';
+    }
+
+    // Display logo only if provided
+    if (logoUrl) {
+      const logo = document.getElementById('logo');
+      logo.src = decodeURIComponent(logoUrl);
+      logo.style.display = 'block';
+    }
+
+    // Auto-download PDF if on mobile
+    const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+    if (isMobile) {
+      setTimeout(() => {
+        html2pdf().set({
+          margin: 5,
+          filename: 'receipt.pdf',
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: 'mm', format: [75, 200], orientation: 'portrait' }
+        }).from(document.getElementById('receiptContainer')).save();
+      }, 1000); // Delay to ensure content loads
+    }
+  </script>
+</body>
+</html>
