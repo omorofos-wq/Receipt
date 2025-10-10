@@ -4,47 +4,112 @@
 <head>
   <meta charset="UTF-8">
   <title>Receipt</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     body {
-      width: 75mm;
+      width: 80mm;
       margin: auto;
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       text-align: center;
-      padding: 20px;
+      padding: 10px;
       box-sizing: border-box;
     }
-    h1 {
-      font-size: 18px;
-      margin-bottom: 10px;
+    img#logo {
+      max-width: 80mm;
+      max-height: 30mm;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: none;
+      margin: 0 auto 10px auto;
     }
     pre {
-      font-size: 13px;
+      font-size: 10px;
+      font-weight: 500;
       line-height: 1.5;
       white-space: pre-wrap;
       word-wrap: break-word;
+      margin: 0;
     }
-    button {
-      margin-top: 20px;
-      padding: 8px 16px;
-      font-size: 13px;
+    button#printBtn {
+      margin-top: 15px;
+      padding: 6px 12px;
+      font-size: 12px;
       cursor: pointer;
+    }
+    @media print {
+      button#printBtn {
+        display: none;
+      }
+    }
+    @media only screen and (max-width: 768px) {
+      button#printBtn {
+        display: none;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Receipt Report</h1>
-  <pre id="search">Loading...</pre>
-  <button onclick="window.print()">Print</button>
+  <div id="receiptContainer">
+    <img id="logo" alt="Logo">
+    <pre id="receipt">Loading...</pre>
+  </div>
+  <button id="printBtn" onclick="window.print()">Print</button>
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
     const rawSearch = urlParams.get('search');
+    const logoUrl = urlParams.get('logo');
 
+    const receipt = document.getElementById('receipt');
+    const logo = document.getElementById('logo');
+
+    // Display receipt content
     if (rawSearch) {
       const decoded = decodeURIComponent(rawSearch.replace(/\+/g, ' '));
-      document.getElementById('search').textContent = decoded;
+      receipt.textContent = decoded;
     } else {
-      document.getElementById('search').textContent = 'No receipt data provided.';
+      receipt.textContent = 'No receipt data provided.';
+    }
+
+    // Function to generate PDF
+    function generatePDF() {
+      html2pdf().set({
+        margin: 5,
+        filename: 'receipt.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: [80, 200], orientation: 'portrait' }
+      }).from(document.getElementById('receiptContainer')).save();
+    }
+
+    // Display logo and wait for it to load before PDF
+    const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+    if (logoUrl) {
+      try {
+        logo.src = decodeURIComponent(logoUrl);
+        logo.onload = () => {
+          logo.style.display = 'block';
+          if (isMobile) {
+            setTimeout(generatePDF, 500);
+          }
+        };
+        logo.onerror = () => {
+          console.warn("Logo failed to load.");
+          if (isMobile) {
+            setTimeout(generatePDF, 500);
+          }
+        };
+      } catch (e) {
+        console.warn("Logo URL decoding failed:", e);
+        if (isMobile) {
+          setTimeout(generatePDF, 500);
+        }
+      }
+    } else {
+      if (isMobile) {
+        setTimeout(generatePDF, 500);
+      }
     }
   </script>
 </body>
