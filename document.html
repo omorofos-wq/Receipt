@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -31,9 +32,9 @@
       margin: 0;
     }
     button#printBtn {
-      margin-top: 15px;
-      padding: 6px 12px;
-      font-size: 12px;
+      margin-top: 18px;
+      padding: 7px 14px;
+      font-size: 14px;
       font-weight: bold;
       color: white;
       background-color: #003366;
@@ -92,30 +93,31 @@
     if (logoUrl) {
       try {
         logo.src = decodeURIComponent(logoUrl);
-        logo.crossOrigin = "anonymous"; // allow CORS for external images
+        logo.crossOrigin = "anonymous";
         logo.onload = () => {
           logo.style.display = 'block';
           if (isMobile) {
-            setTimeout(generatePDF, 500);
+            setTimeout(generatePDF, 5000); // 5-second delay
           }
         };
         logo.onerror = () => {
           console.warn("Logo failed to load.");
           if (isMobile) {
-            setTimeout(generatePDF, 500);
+            setTimeout(generatePDF, 5000);
           }
         };
       } catch (e) {
         console.warn("Logo URL decoding failed:", e);
         if (isMobile) {
-          setTimeout(generatePDF, 500);
+          setTimeout(generatePDF, 5000);
         }
       }
     } else {
       if (isMobile) {
-        setTimeout(generatePDF, 500);
+        setTimeout(generatePDF, 5000);
       }
     }
   </script>
 </body>
 </html>
+
