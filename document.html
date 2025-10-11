@@ -79,9 +79,14 @@
     // Display logo only if provided
     if (logoUrl) {
       try {
-        logo.src = decodeURIComponent(logoUrl);
         logo.crossOrigin = "anonymous";
-        logo.style.display = 'block';
+        logo.src = decodeURIComponent(logoUrl);
+        logo.onload = () => {
+          logo.style.display = 'block';
+        };
+        logo.onerror = () => {
+          console.warn("Logo failed to load.");
+        };
       } catch (e) {
         console.warn("Logo URL decoding failed:", e);
       }
@@ -105,4 +110,5 @@
   </script>
 </body>
 </html>
+
 
