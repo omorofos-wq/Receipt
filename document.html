@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Receipt</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     body {
       width: 77mm;
@@ -32,11 +32,11 @@
     }
     button#printBtn {
       margin-top: 18px;
-      padding: 7px 14px;
+      padding: 7px 14px; /* 20% larger than original */
       font-size: 14px;
       font-weight: bold;
       color: white;
-      background-color: #003366;
+      background-color: #003366; /* Dark blue */
       border: none;
       border-radius: 4px;
       cursor: pointer;
@@ -65,50 +65,38 @@
     const rawSearch = urlParams.get('search');
     const logoUrl = urlParams.get('logo');
 
-    const receipt = document.getElementById('receipt');
-    const logo = document.getElementById('logo');
-
     // Display receipt content
     if (rawSearch) {
       const decoded = decodeURIComponent(rawSearch.replace(/\+/g, ' '));
-      receipt.textContent = decoded;
+      document.getElementById('receipt').textContent = decoded;
     } else {
-      receipt.textContent = 'No receipt data provided.';
+      document.getElementById('receipt').textContent = 'No receipt data provided.';
     }
 
     // Display logo only if provided
     if (logoUrl) {
       try {
-        logo.crossOrigin = "anonymous";
+        const logo = document.getElementById('logo');
         logo.src = decodeURIComponent(logoUrl);
-        logo.onload = () => {
-          logo.style.display = 'block';
-        };
-        logo.onerror = () => {
-          console.warn("Logo failed to load.");
-        };
+        logo.style.display = 'block';
       } catch (e) {
         console.warn("Logo URL decoding failed:", e);
       }
     }
 
-    // Auto-download JPEG if on mobile
+    // Auto-download PDF if on mobile
     const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
     if (isMobile) {
       setTimeout(() => {
-        html2canvas(document.getElementById('receiptContainer'), {
-          scale: 2,
-          useCORS: true
-        }).then(canvas => {
-          const link = document.createElement('a');
-          link.download = 'receipt.jpg';
-          link.href = canvas.toDataURL('image/jpeg', 0.98);
-          link.click();
-        });
+        html2pdf().set({
+          margin: 5,
+          filename: 'receipt.pdf',
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: 'mm', format: [77, 200], orientation: 'portrait' }
+        }).from(document.getElementById('receiptContainer')).save();
       }, 6000); // 6-second delay
     }
   </script>
 </body>
 </html>
-
-
