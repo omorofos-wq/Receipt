@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Receipt</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     body {
-      width: 77mm;
+      width: 80mm;
       margin: auto;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       text-align: center;
@@ -13,7 +14,7 @@
       box-sizing: border-box;
     }
     img#logo {
-      max-width: 77mm;
+      max-width: 80mm;
       max-height: 30mm;
       width: auto;
       height: auto;
@@ -33,11 +34,6 @@
       margin-top: 15px;
       padding: 6px 12px;
       font-size: 12px;
-      font-weight: bold;
-      color: white;
-      background-color: #003366; /* Dark blue */
-      border: none;
-      border-radius: 4px;
       cursor: pointer;
     }
     @media print {
@@ -75,22 +71,46 @@
       receipt.textContent = 'No receipt data provided.';
     }
 
-    // Display logo if provided
+    // Function to generate PDF
+    function generatePDF() {
+      html2pdf().set({
+        margin: 5,
+        filename: 'receipt.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: [80, 200], orientation: 'portrait' }
+      }).from(document.getElementById('receiptContainer')).save();
+    }
+
+    // Display logo and wait for it to load before PDF
+    const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
     if (logoUrl) {
       try {
         logo.src = decodeURIComponent(logoUrl);
         logo.onload = () => {
           logo.style.display = 'block';
+          if (isMobile) {
+            setTimeout(generatePDF, 500);
+          }
         };
         logo.onerror = () => {
           console.warn("Logo failed to load.");
+          if (isMobile) {
+            setTimeout(generatePDF, 500);
+          }
         };
       } catch (e) {
         console.warn("Logo URL decoding failed:", e);
+        if (isMobile) {
+          setTimeout(generatePDF, 500);
+        }
+      }
+    } else {
+      if (isMobile) {
+        setTimeout(generatePDF, 500);
       }
     }
   </script>
 </body>
 </html>
-  
 
