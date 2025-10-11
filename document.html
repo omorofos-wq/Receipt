@@ -84,21 +84,24 @@
       }
     }
 
-    // Auto-download PDF if on mobile
-    const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-    if (isMobile) {
-      setTimeout(() => {
-        html2pdf().set({
-          margin: 5,
-          filename: 'receipt.pdf',
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2 },
-          jsPDF: { unit: 'mm', format: [77, 200], orientation: 'portrait' }
-        }).from(document.getElementById('receiptContainer')).save();
-      }, 10000); // 6-second delay
-    }
+   // Auto-generate JPEG if on mobile
+const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+if (isMobile) {
+  setTimeout(() => {
+    html2canvas(document.getElementById('receiptContainer'), {
+      scale: 2,
+      useCORS: true
+    }).then(canvas => {
+      const link = document.createElement('a');
+      link.download = 'receipt.jpg';
+      link.href = canvas.toDataURL('image/jpeg', 0.98);
+      link.click();
+    });
+  }, 6000); // 6-second delay
+}
   </script>
 </body>
 </html>
+
 
 
