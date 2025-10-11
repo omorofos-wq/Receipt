@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -32,11 +33,11 @@
     }
     button#printBtn {
       margin-top: 18px;
-      padding: 7px 14px; /* 20% larger than original */
+      padding: 7px 14px;
       font-size: 14px;
       font-weight: bold;
       color: white;
-      background-color: #003366; /* Dark blue */
+      background-color: #003366;
       border: none;
       border-radius: 4px;
       cursor: pointer;
@@ -65,18 +66,20 @@
     const rawSearch = urlParams.get('search');
     const logoUrl = urlParams.get('logo');
 
+    const receipt = document.getElementById('receipt');
+    const logo = document.getElementById('logo');
+
     // Display receipt content
     if (rawSearch) {
       const decoded = decodeURIComponent(rawSearch.replace(/\+/g, ' '));
-      document.getElementById('receipt').textContent = decoded;
+      receipt.textContent = decoded;
     } else {
-      document.getElementById('receipt').textContent = 'No receipt data provided.';
+      receipt.textContent = 'No receipt data provided.';
     }
 
     // Display logo only if provided
     if (logoUrl) {
       try {
-        const logo = document.getElementById('logo');
         logo.src = decodeURIComponent(logoUrl);
         logo.style.display = 'block';
       } catch (e) {
@@ -84,19 +87,25 @@
       }
     }
 
-    // Auto-download PDF if on mobile
+    // Auto-download PDF if on mobile, excluding logo
     const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
     if (isMobile) {
       setTimeout(() => {
+        const originalDisplay = logo.style.display;
+        logo.style.display = 'none'; // Hide logo before PDF generation
+
         html2pdf().set({
           margin: 5,
           filename: 'receipt.pdf',
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { scale: 2 },
           jsPDF: { unit: 'mm', format: [77, 200], orientation: 'portrait' }
-        }).from(document.getElementById('receiptContainer')).save();
+        }).from(document.getElementById('receiptContainer')).save().then(() => {
+          logo.style.display = originalDisplay; // Restore logo after PDF
+        });
       }, 6000); // 6-second delay
     }
   </script>
 </body>
 </html>
+
