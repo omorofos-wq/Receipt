@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>Receipt</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     body {
@@ -88,31 +87,22 @@
       }
     }
 
-    // Auto-generate PDF and JPEG if on mobile
+    // Auto-download JPEG if on mobile
     const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
     if (isMobile) {
       setTimeout(() => {
-        const container = document.getElementById('receiptContainer');
-
-        // Generate PDF
-        html2pdf().set({
-          margin: 5,
-          filename: 'receipt.pdf',
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true },
-          jsPDF: { unit: 'mm', format: [77, 200], orientation: 'portrait' }
-        }).from(container).save();
-
-        // Generate JPEG
-        html2canvas(container, { scale: 2, useCORS: true }).then(canvas => {
+        html2canvas(document.getElementById('receiptContainer'), {
+          scale: 2,
+          useCORS: true
+        }).then(canvas => {
           const link = document.createElement('a');
           link.download = 'receipt.jpg';
           link.href = canvas.toDataURL('image/jpeg', 0.98);
           link.click();
         });
-
       }, 6000); // 6-second delay
     }
   </script>
 </body>
 </html>
+
