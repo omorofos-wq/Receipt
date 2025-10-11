@@ -30,13 +30,8 @@
       word-wrap: break-word;
       margin: 0;
     }
-    .button-group {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
+    button#printBtn {
       margin-top: 18px;
-    }
-    button {
       padding: 7px 14px;
       font-size: 14px;
       font-weight: bold;
@@ -47,12 +42,12 @@
       cursor: pointer;
     }
     @media print {
-      button {
+      button#printBtn {
         display: none;
       }
     }
     @media only screen and (max-width: 768px) {
-      button {
+      button#printBtn {
         display: none;
       }
     }
@@ -63,11 +58,7 @@
     <img id="logo" alt="Logo">
     <pre id="receipt">Loading...</pre>
   </div>
-
-  <div class="button-group">
-    <button id="printBtn" onclick="window.print()">Print</button>
-    <button id="pdfBtn" onclick="generatePDF()">Download PDF</button>
-  </div>
+  <button id="printBtn" onclick="window.print()">Print</button>
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
@@ -95,17 +86,22 @@
       }
     }
 
-    // Manual PDF generation
-    function generatePDF() {
-      html2pdf().set({
-        margin: 5,
-        filename: 'receipt.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: [77, 200], orientation: 'portrait' }
-      }).from(document.getElementById('receiptContainer')).save();
+    // Auto-download PDF if on mobile, excluding logo
+    const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+    if (isMobile) {
+      setTimeout(() => {
+        const originalDisplay = logo.style.display;
+        logo.style.display = 'none'; // Hide logo before PDF generation
+
+        html2pdf().set({
+          margin: 5,
+          filename: 'receipt.pdf',
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: 'mm', format: [77, 200], orientation: 'portrait' }
+        }).from(document.getElementById('receiptContainer')).save().then(() => {
+          logo.style.display = originalDisplay; // Restore logo after PDF
+        });
+      }, 2000); // 2-second delay
     }
   </script>
-</body>
-</html>
-
