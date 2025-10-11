@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Receipt</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <style>
     body {
       width: 77mm;
@@ -32,11 +33,11 @@
     }
     button#printBtn {
       margin-top: 18px;
-      padding: 7px 14px; /* 20% larger than original */
+      padding: 7px 14px;
       font-size: 14px;
       font-weight: bold;
       color: white;
-      background-color: #003366; /* Dark blue */
+      background-color: #003366;
       border: none;
       border-radius: 4px;
       cursor: pointer;
@@ -65,43 +66,53 @@
     const rawSearch = urlParams.get('search');
     const logoUrl = urlParams.get('logo');
 
+    const receipt = document.getElementById('receipt');
+    const logo = document.getElementById('logo');
+
     // Display receipt content
     if (rawSearch) {
       const decoded = decodeURIComponent(rawSearch.replace(/\+/g, ' '));
-      document.getElementById('receipt').textContent = decoded;
+      receipt.textContent = decoded;
     } else {
-      document.getElementById('receipt').textContent = 'No receipt data provided.';
+      receipt.textContent = 'No receipt data provided.';
     }
 
     // Display logo only if provided
     if (logoUrl) {
       try {
-        const logo = document.getElementById('logo');
         logo.src = decodeURIComponent(logoUrl);
+        logo.crossOrigin = "anonymous";
         logo.style.display = 'block';
       } catch (e) {
         console.warn("Logo URL decoding failed:", e);
       }
     }
 
-   // Auto-generate JPEG if on mobile
-const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-if (isMobile) {
-  setTimeout(() => {
-    html2canvas(document.getElementById('receiptContainer'), {
-      scale: 2,
-      useCORS: true
-    }).then(canvas => {
-      const link = document.createElement('a');
-      link.download = 'receipt.jpg';
-      link.href = canvas.toDataURL('image/jpeg', 0.98);
-      link.click();
-    });
-  }, 6000); // 6-second delay
-}
+    // Auto-generate PDF and JPEG if on mobile
+    const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+    if (isMobile) {
+      setTimeout(() => {
+        const container = document.getElementById('receiptContainer');
+
+        // Generate PDF
+        html2pdf().set({
+          margin: 5,
+          filename: 'receipt.pdf',
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'mm', format: [77, 200], orientation: 'portrait' }
+        }).from(container).save();
+
+        // Generate JPEG
+        html2canvas(container, { scale: 2, useCORS: true }).then(canvas => {
+          const link = document.createElement('a');
+          link.download = 'receipt.jpg';
+          link.href = canvas.toDataURL('image/jpeg', 0.98);
+          link.click();
+        });
+
+      }, 6000); // 6-second delay
+    }
   </script>
 </body>
 </html>
-
-
-
