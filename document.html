@@ -1,9 +1,9 @@
+
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <title>Receipt</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     body {
       width: 77mm;
@@ -12,9 +12,10 @@
       text-align: center;
       padding: 10px;
       box-sizing: border-box;
+      transition: width 0.3s ease;
     }
     img#logo {
-      max-width: 77mm;
+      max-width: 100%;
       max-height: 30mm;
       width: auto;
       height: auto;
@@ -29,9 +30,15 @@
       white-space: pre-wrap;
       word-wrap: break-word;
       margin: 0;
+      transition: font-size 0.3s ease;
     }
-    button#printBtn {
+    .button-group {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
       margin-top: 18px;
+    }
+    button {
       padding: 7px 14px;
       font-size: 14px;
       font-weight: bold;
@@ -42,12 +49,12 @@
       cursor: pointer;
     }
     @media print {
-      button#printBtn {
+      button {
         display: none;
       }
     }
     @media only screen and (max-width: 768px) {
-      button#printBtn {
+      button {
         display: none;
       }
     }
@@ -58,7 +65,11 @@
     <img id="logo" alt="Logo">
     <pre id="receipt">Loading...</pre>
   </div>
-  <button id="printBtn" onclick="window.print()">Print</button>
+
+  <div class="button-group">
+    <button onclick="window.print()">Print</button>
+    <button onclick="printA4()">Print A4</button>
+  </div>
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
@@ -86,22 +97,27 @@
       }
     }
 
-    // Auto-download PDF if on mobile, excluding logo
-    const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-    if (isMobile) {
-      setTimeout(() => {
-        const originalDisplay = logo.style.display;
-        logo.style.display = 'none'; // Hide logo before PDF generation
+    // Print A4 layout
+    function printA4() {
+      const body = document.body;
+      const receiptText = document.querySelector('pre');
 
-        html2pdf().set({
-          margin: 5,
-          filename: 'receipt.pdf',
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2 },
-          jsPDF: { unit: 'mm', format: [77, 200], orientation: 'portrait' }
-        }).from(document.getElementById('receiptContainer')).save().then(() => {
-          logo.style.display = originalDisplay; // Restore logo after PDF
-        });
-      }, 2000); // 2-second delay
+      // Apply A4 layout and font size
+      body.style.width = '210mm';
+      receiptText.style.fontSize = '12px';
+
+      // Trigger print
+      window.print();
+
+      // Revert to original layout after short delay
+      setTimeout(() => {
+        body.style.width = '77mm';
+        receiptText.style.fontSize = '10px';
+      }, 1000);
     }
   </script>
+</body>
+</html>
+
+
+
