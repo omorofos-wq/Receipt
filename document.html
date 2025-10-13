@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -30,7 +31,7 @@
       white-space: pre-wrap;
       word-wrap: break-word;
       margin: 0;
-      transition: font-size 0.3s ease;
+      transition: font-size 0.3s ease, line-height 0.3s ease;
     }
     .button-group {
       display: flex;
@@ -104,12 +105,14 @@
 
       body.style.width = '210mm';
       receiptText.style.fontSize = '12px';
+      receiptText.style.lineHeight = '1.5';
 
       window.print();
 
       setTimeout(() => {
         body.style.width = '77mm';
         receiptText.style.fontSize = '10px';
+        receiptText.style.lineHeight = '1.2';
       }, 1000);
     }
 
@@ -134,5 +137,3 @@
   </script>
 </body>
 </html>
-
-
