@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -67,8 +68,8 @@
   </div>
 
   <div class="button-group">
-    <button onclick="printReceipt()">Print</button>
-    <button onclick="printA4()">Print A4</button>
+    <button id="printBtn">Print</button>
+    <button id="printA4Btn">Print A4</button>
   </div>
 
   <script>
@@ -78,6 +79,8 @@
 
     const receipt = document.getElementById('receipt');
     const logo = document.getElementById('logo');
+    const printBtn = document.getElementById('printBtn');
+    const printA4Btn = document.getElementById('printA4Btn');
 
     // Display receipt content
     if (rawSearch) {
@@ -98,12 +101,12 @@
     }
 
     // Print 77mm layout
-    function printReceipt() {
+    printBtn.addEventListener('click', () => {
       window.print();
-    }
+    });
 
     // Print A4 layout
-    function printA4() {
+    printA4Btn.addEventListener('click', () => {
       const body = document.body;
       const receiptText = document.querySelector('pre');
 
@@ -116,13 +119,12 @@
         body.style.width = '77mm';
         receiptText.style.fontSize = '10px';
       }, 1000);
-    }
+    });
 
     // Auto-generate PDF on mobile after 3 seconds (excluding logo)
     const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
     if (isMobile) {
       setTimeout(() => {
-        const logo = document.getElementById('logo');
         const originalDisplay = logo.style.display;
         logo.style.display = 'none'; // Hide logo before PDF
 
@@ -135,9 +137,8 @@
         }).from(document.getElementById('receiptContainer')).save().then(() => {
           logo.style.display = originalDisplay; // Restore logo after PDF
         });
-      }, 3000); // 3-second delay
+      }, 3000);
     }
   </script>
 </body>
 </html>
-
