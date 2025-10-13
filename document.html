@@ -1,9 +1,9 @@
-
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <title>Receipt</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     body {
       width: 77mm;
@@ -102,22 +102,30 @@
       const body = document.body;
       const receiptText = document.querySelector('pre');
 
-      // Apply A4 layout and font size
       body.style.width = '210mm';
       receiptText.style.fontSize = '12px';
 
-      // Trigger print
       window.print();
 
-      // Revert to original layout after short delay
       setTimeout(() => {
         body.style.width = '77mm';
         receiptText.style.fontSize = '10px';
       }, 1000);
     }
+
+    // Auto-generate PDF on mobile after 3 seconds
+    const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+    if (isMobile) {
+      setTimeout(() => {
+        html2pdf().set({
+          margin: 5,
+          filename: 'receipt.pdf',
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'mm', format: [77, 200], orientation: 'portrait' }
+        }).from(document.getElementById('receiptContainer')).save();
+      }, 3000); // 3-second delay
+    }
   </script>
 </body>
 </html>
-
-
-
