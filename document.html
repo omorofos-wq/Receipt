@@ -67,7 +67,7 @@
   </div>
 
   <div class="button-group">
-    <button onclick="window.print()">Print</button>
+    <button onclick="printReceipt()">Print</button>
     <button onclick="printA4()">Print A4</button>
   </div>
 
@@ -97,6 +97,11 @@
       }
     }
 
+    // Print 77mm layout
+    function printReceipt() {
+      window.print();
+    }
+
     // Print A4 layout
     function printA4() {
       const body = document.body;
@@ -113,19 +118,26 @@
       }, 1000);
     }
 
-    // Auto-generate PDF on mobile after 3 seconds
+    // Auto-generate PDF on mobile after 3 seconds (excluding logo)
     const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
     if (isMobile) {
       setTimeout(() => {
+        const logo = document.getElementById('logo');
+        const originalDisplay = logo.style.display;
+        logo.style.display = 'none'; // Hide logo before PDF
+
         html2pdf().set({
           margin: 5,
           filename: 'receipt.pdf',
           image: { type: 'jpeg', quality: 0.98 },
           html2canvas: { scale: 2, useCORS: true },
           jsPDF: { unit: 'mm', format: [77, 200], orientation: 'portrait' }
-        }).from(document.getElementById('receiptContainer')).save();
+        }).from(document.getElementById('receiptContainer')).save().then(() => {
+          logo.style.display = originalDisplay; // Restore logo after PDF
+        });
       }, 3000); // 3-second delay
     }
   </script>
 </body>
 </html>
+
