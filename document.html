@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -68,8 +67,8 @@
   </div>
 
   <div class="button-group">
-    <button id="printBtn">Print</button>
-    <button id="printA4Btn">Print A4</button>
+    <button onclick="window.print()">Print</button>
+    <button onclick="printA4()">Print A4</button>
   </div>
 
   <script>
@@ -79,8 +78,6 @@
 
     const receipt = document.getElementById('receipt');
     const logo = document.getElementById('logo');
-    const printBtn = document.getElementById('printBtn');
-    const printA4Btn = document.getElementById('printA4Btn');
 
     // Display receipt content
     if (rawSearch) {
@@ -100,13 +97,8 @@
       }
     }
 
-    // Print 77mm layout
-    printBtn.addEventListener('click', () => {
-      window.print();
-    });
-
     // Print A4 layout
-    printA4Btn.addEventListener('click', () => {
+    function printA4() {
       const body = document.body;
       const receiptText = document.querySelector('pre');
 
@@ -119,7 +111,7 @@
         body.style.width = '77mm';
         receiptText.style.fontSize = '10px';
       }, 1000);
-    });
+    }
 
     // Auto-generate PDF on mobile after 3 seconds (excluding logo)
     const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
