@@ -1,83 +1,180 @@
+`html
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Receipt</title>
-    <style>
-        /* Base styles for the view on a screen */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            text-align: center; /* Center content on the screen */
-        }
-        .container {
-            width: 75mm; /* Target width for the content */
-            margin: 0 auto; /* Center the container */
-            border: 1px solid #ccc; /* Visual aid on screen */
-            padding: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .print-button {
-            margin-top: 20px;
-            padding: 10px 20px;
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-        }
-
-        /* Print-specific styles (critical for 75mm width) */
-        @media print {
-            body {
-                margin: 0; /* Remove browser margins */
-                padding: 0;
-            }
-            .container {
-                width: 75mm; /* Enforce 75mm print width */
-                border: none; /* Remove border when printing */
-                box-shadow: none;
-                text-align: center; /* Center the content within the 75mm area */
-            }
-            .print-button {
-                display: none; /* Hide the button when printing */
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Receipt</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    body {
+      width: 77mm;
+      margin: auto;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
+      padding: 10px;
+      box-sizing: border-box;
+      transition: width 0.3s ease;
+    }
+    img#logo {
+      max-width: 100%;
+      max-height: 30mm;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: none;
+      margin: 0 auto 10px auto;
+    }
+    pre {
+      font-size: 10px;
+      font-weight: 500;
+      line-height: 1.2;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      margin: 0;
+      transition: font-size 0.3s ease, line-height 0.3s ease;
+    }
+    .button-group {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 18px;
+    }
+    button {
+      padding: 7px 14px;
+      font-size: 14px;
+      font-weight: bold;
+      color: white;
+      background-color: #003366;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    #supportNote {
+      margin-top: 12px;
+      font-size: 11px;
+      color: #cc0000;
+      font-style: italic;
+    }
+    @media print {
+      button {
+        display: none;
+      }
+    }
+    @media only screen and (max-width: 768px) {
+      button {
+        display: none;
+      }
+    }
+  </style>
 </head>
 <body>
+  <div id="receiptContainer">
+    <img id="logo" alt="Logo">
+    <pre id="receipt">Loading...</pre>
+    <div id="supportNote"></div>
+  </div>
 
-<div class="container" id="report-content">
-    <p id="search-output">Loading data...</p>
-</div>
+  <div class="button-group">
+    <button onclick="window.print()">Print</button>
+    <button onclick="printA4()">Print A4</button>
+  </div>
 
-<button class="print-button" onclick="window.print()">Print Report</button>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const rawSearch = urlParams.get('search');
+    const logoUrl = urlParams.get('logo');
+    const appName = urlParams.get('app');
+    const appId = urlParams.get('id');
 
-<script>
-    // Function to get the URL parameter 'data'
-    function getParameterByName(name, url = window.location.href) {
-        name = name.replace(/[\[\]]/g, '\\$&');
-        var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
-            results = regex.exec(url);
-        if (!results) return null;
-        if (!results[2]) return '';
-        return decodeURIComponent(results[2].replace(/\+/g, ' '));
+    const receipt = document.getElementById('receipt');
+    const logo = document.getElementById('logo');
+    const supportNote = document.getElementById('supportNote');
+
+    // Display receipt content
+    if (rawSearch) {
+      const decoded = decodeURIComponent(rawSearch.replace(/\+/g, ' '));
+      receipt.textContent = decoded;
+    } else {
+      receipt.textContent = 'No receipt data provided.';
     }
 
-    // Get the search data and display it
-    document.addEventListener('DOMContentLoaded', () => {
-        const searchData = getParameterByName('data');
-        const outputElement = document.getElementById('search-output');
-        
-        if (searchData) {
-            // Display the data, converting URL-encoded newlines back to breaks
-            outputElement.innerHTML = searchData.replace(/\\n/g, '<br>');
-        } else {
-            outputElement.innerText = 'No data found in URL.';
-        }
-    });
+    // Display logo only if provided
+    if (logoUrl) {
+      try {
+        logo.src = decodeURIComponent(logoUrl);
+        logo.style.display = 'block';
+      } catch (e) {
+        console.warn("Logo URL decoding failed:", e);
+      }
+    }
 
-</script>
+    // Whitelist check from Google Sheet CSV
+    const csvUrl = ""; // <-- Paste your published CSV link here
+    let whitelistChecked = false;
 
+    if (csvUrl) {
+      fetch(csvUrl)
+        .then(response => response.text())
+        .then(csv => {
+          const rows = csv.trim().split("\n").map(row => row.split(","));
+          const headers = rows[0];
+          const appIndex = headers.indexOf("AppName");
+          const idIndex = headers.indexOf("AppId");
+
+          const isWhitelisted = rows.slice(1).some(row =>
+            row[appIndex] === appName && row[idIndex] === appId
+          );
+
+          whitelistChecked = true;
+          if (!isWhitelisted) {
+            supportNote.textContent = "support this project";
+          }
+        })
+        .catch(error => {
+          console.warn("Whitelist fetch failed:", error);
+          supportNote.textContent = "support this project";
+        });
+    } else {
+      // No CSV link provided
+      supportNote.textContent = "support this project";
+    }
+
+    // Print A4 layout
+    function printA4() {
+      const body = document.body;
+      const receiptText = document.querySelector('pre');
+
+      body.style.width = '210mm';
+      receiptText.style.fontSize = '12px';
+      receiptText.style.lineHeight = '1.5';
+
+      window.print();
+
+      setTimeout(() => {
+        body.style.width = '77mm';
+        receiptText.style.fontSize = '10px';
+        receiptText.style.lineHeight = '1.2';
+      }, 1000);
+    }
+
+    // Auto-generate PDF on mobile after 3 seconds (excluding logo)
+    const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+    if (isMobile) {
+      setTimeout(() => {
+        const originalDisplay = logo.style.display;
+        logo.style.display = 'none';
+
+        html2pdf().set({
+          margin: 5,
+          filename: 'receipt.pdf',
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'mm', format: [77, 200], orientation: 'portrait' }
+        }).from(document.getElementById('receiptContainer')).save().then(() => {
+          logo.style.display = originalDisplay;
+        });
+      }, 3000);
+    }
+  </script>
 </body>
 </html>
