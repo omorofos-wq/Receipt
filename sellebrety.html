@@ -112,7 +112,7 @@
     const csvUrl = ""; // <-- Paste your published CSV link here
     let whitelistChecked = false;
 
-    if (https://docs.google.com/spreadsheets/d/e/2PACX-1vTguICc69YUQjSMl8fg2M8KrqcAEhpBj1siZ4SisTJRkQqBa9pZEHjaQYf4fL2wlawcpuS27-ly_9_P/pub?output=csv) {
+    if (csvUrl) {
       fetch(https://docs.google.com/spreadsheets/d/e/2PACX-1vTguICc69YUQjSMl8fg2M8KrqcAEhpBj1siZ4SisTJRkQqBa9pZEHjaQYf4fL2wlawcpuS27-ly_9_P/pub?output=csv)
         .then(response => response.text())
         .then(csv => {
@@ -178,6 +178,7 @@
   </script>
 </body>
 </html>
+
 
 
 
