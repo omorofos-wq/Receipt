@@ -109,11 +109,11 @@
     }
 
     // Whitelist check from Google Sheet CSV
-    const csvUrl = ""; // <-- Paste your published CSV link here
+    const https://docs.google.com/spreadsheets/d/e/2PACX-1vTguICc69YUQjSMl8fg2M8KrqcAEhpBj1siZ4SisTJRkQqBa9pZEHjaQYf4fL2wlawcpuS27-ly_9_P/pub?output=csv = ""; // <-- Paste your published CSV link here
     let whitelistChecked = false;
 
-    if (csvUrl) {
-      fetch(csvUrl)
+    if (https://docs.google.com/spreadsheets/d/e/2PACX-1vTguICc69YUQjSMl8fg2M8KrqcAEhpBj1siZ4SisTJRkQqBa9pZEHjaQYf4fL2wlawcpuS27-ly_9_P/pub?output=csv) {
+      fetch(https://docs.google.com/spreadsheets/d/e/2PACX-1vTguICc69YUQjSMl8fg2M8KrqcAEhpBj1siZ4SisTJRkQqBa9pZEHjaQYf4fL2wlawcpuS27-ly_9_P/pub?output=csv)
         .then(response => response.text())
         .then(csv => {
           const rows = csv.trim().split("\n").map(row => row.split(","));
@@ -178,4 +178,5 @@
   </script>
 </body>
 </html>
+
 
