@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -20,14 +21,13 @@
       width: auto;
       height: auto;
       object-fit: contain;
-      /* Keep display: none; initially. The JS will change it to 'block' upon successful load. */
-      display: none; 
+      display: none;
       margin: 0 auto 10px auto;
     }
     pre {
       font-size: 10px;
       font-weight: 500;
-      line-height: 1.2;
+      line-height: 1.16;
       white-space: pre-wrap;
       word-wrap: break-word;
       margin: 0;
@@ -98,86 +98,46 @@
       receipt.textContent = 'No receipt data provided.';
     }
 
-    /**
-     * Converts the logo from a URL to a Base64 Data URL and sets it as the image source.
-     * This bypasses cross-origin security issues for html2canvas.
-     * @param {string} url The logo's external URL.
-     * @returns {Promise<void>} A promise that resolves when the logo is ready (or failed).
-     */
-    function convertLogoToBase64AndRender(url) {
-      return new Promise((resolve, reject) => {
-        if (!url) {
-          logo.style.display = 'none';
-          return resolve();
-        }
-
-        const img = new Image();
-        img.crossOrigin = 'Anonymous'; // Crucial: Tries to load the external image permissively
-        
-        img.onload = () => {
-          try {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0);
-            const dataURL = canvas.toDataURL('image/png'); // Convert to Base64
-            logo.src = dataURL; // Set the logo source to the Base64 string
-            logo.style.display = 'block';
-            resolve();
-          } catch (e) {
-            console.error("Base64 conversion failed (CORS/security issue):", e);
-            // Fallback: Use the original URL, which might work for screen display/printing
-            logo.src = url; 
-            logo.style.display = 'block';
-            resolve();
-          }
-        };
-        
-        img.onerror = (e) => {
-          console.warn("Logo loading failed:", e);
-          logo.style.display = 'none';
-          resolve(); // Resolve anyway to not block PDF generation
-        };
-        
-        img.src = url;
-      });
-    }
-
-    // Start the logo conversion/rendering process
-    let isLogoReady = Promise.resolve();
+    // Display logo only if provided
     if (logoUrl) {
       try {
-        const decodedUrl = decodeURIComponent(logoUrl);
-        isLogoReady = convertLogoToBase64AndRender(decodedUrl);
+        logo.src = decodeURIComponent(logoUrl);
+        logo.style.display = 'block';
       } catch (e) {
         console.warn("Logo URL decoding failed:", e);
       }
     }
 
     // Whitelist check from Google Sheet CSV
-    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTguICc69YUQjSMl8fg2M8KrqcAEhpBj1siZ4SisTJRkQqBa9pZEHjaQYf4fL2wlawcpuS27-ly_9_P/pub?output=csv";
+    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTguICc69YUQjSMl8fg2M8KrqcAEhpBj1siZ4SisTJRkQqBa9pZEHjaQYf4fL2wlawcpuS27-ly_9_P/pub?output=csv"; // <-- Paste your published CSV link here
+    let whitelistChecked = false;
 
-    fetch(csvUrl)
-      .then(response => response.text())
-      .then(csv => {
-        const rows = csv.trim().split("\n").map(row => row.split(","));
-        const headers = rows[0];
-        const appIndex = headers.indexOf("AppName");
-        const idIndex = headers.indexOf("AppId");
+    if (csvUrl) {
+      fetch(csvUrl)
+        .then(response => response.text())
+        .then(csv => {
+          const rows = csv.trim().split("\n").map(row => row.split(","));
+          const headers = rows[0];
+          const appIndex = headers.indexOf("AppName");
+          const idIndex = headers.indexOf("AppId");
 
-        const isWhitelisted = rows.slice(1).some(row =>
-          row[appIndex] === appName && row[idIndex] === appId
-        );
+          const isWhitelisted = rows.slice(1).some(row =>
+            row[appIndex] === appName && row[idIndex] === appId
+          );
 
-        if (!isWhitelisted) {
+          whitelistChecked = true;
+          if (!isWhitelisted) {
+            supportNote.textContent = "support this project";
+          }
+        })
+        .catch(error => {
+          console.warn("Whitelist fetch failed:", error);
           supportNote.textContent = "support this project";
-        }
-      })
-      .catch(error => {
-        console.warn("Whitelist fetch failed:", error);
-        supportNote.textContent = "support this project";
-      });
+        });
+    } else {
+      // No CSV link provided
+      supportNote.textContent = "support this project";
+    }
 
     // Print A4 layout
     function printA4() {
@@ -193,29 +153,28 @@
       setTimeout(() => {
         body.style.width = '77mm';
         receiptText.style.fontSize = '10px';
-        receiptText.style.lineHeight = '1.2';
+        receiptText.style.lineHeight = '1.16';
       }, 1000);
     }
 
-    // Auto-generate PDF on mobile after 3 seconds (waits for logo)
+    // Auto-generate PDF on mobile after 3 seconds (excluding logo)
     const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
     if (isMobile) {
-      // Wait for the logo to be converted to Base64
-      isLogoReady.then(() => {
-        setTimeout(() => {
-          // The logo is now a Base64 string, so it can be reliably captured
-          // by html2canvas without hiding it.
-          html2pdf().set({
-            margin: 5,
-            filename: 'receipt.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: 'mm', format: [77, 200], orientation: 'portrait' }
-          }).from(document.getElementById('receiptContainer')).save();
-        }, 3000);
-      });
+      setTimeout(() => {
+        const originalDisplay = logo.style.display;
+        logo.style.display = 'none';
+
+        html2pdf().set({
+          margin: 5,
+          filename: 'receipt.pdf',
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'mm', format: [77, 200], orientation: 'portrait' }
+        }).from(document.getElementById('receiptContainer')).save().then(() => {
+          logo.style.display = originalDisplay;
+        });
+      }, 3000);
     }
   </script>
 </body>
 </html>
-
