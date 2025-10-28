@@ -157,7 +157,7 @@
       }, 1000);
     }
 
-    // Auto-generate PDF on mobile after 3 seconds (excluding logo)
+    // Auto-generate PDF on mobile after 20 miliseconds (excluding logo)
     const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
     if (isMobile) {
       setTimeout(() => {
@@ -173,8 +173,9 @@
         }).from(document.getElementById('receiptContainer')).save().then(() => {
           logo.style.display = originalDisplay;
         });
-      }, 3000);
+      }, 20);
     }
   </script>
 </body>
 </html>
+
