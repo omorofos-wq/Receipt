@@ -64,10 +64,25 @@
       }
     }
   </style>
+  <script>
+    // Dynamically insert preload tag for logo
+    const preloadLogo = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const logoUrl = urlParams.get('logo');
+      if (logoUrl) {
+        const preload = document.createElement('link');
+        preload.rel = 'preload';
+        preload.as = 'image';
+        preload.href = decodeURIComponent(logoUrl);
+        document.head.appendChild(preload);
+      }
+    };
+    preloadLogo();
+  </script>
 </head>
 <body>
   <div id="receiptContainer">
-    <img id="logo" alt="Logo">
+    <img id="logo" alt="Logo" loading="lazy" width="200" height="80">
     <pre id="receipt">Loading...</pre>
     <div id="supportNote"></div>
   </div>
